@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /members/{memberId} {
+      allow read: if false;
+      allow create: if request.resource.data.keys().hasOnly(['name','phone','state','height','createdAt','status'])
+        && request.resource.data.keys().hasAll(['name','phone','state','height','createdAt','status'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 80
+        && request.resource.data.phone is string && request.resource.data.phone.size() >= 7 && request.resource.data.phone.size() <= 20
+        && request.resource.data.state is string && request.resource.data.state.size() >= 2 && request.resource.data.state.size() <= 60
+        && request.resource.data.height is int && request.resource.data.height >= 50 && request.resource.data.height <= 400
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.status == 'approved';
+      allow update: if false;
+      allow delete: if false;
+    }
+    match /stats/public {
+      allow read: if true;
+      allow create, update, delete: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
